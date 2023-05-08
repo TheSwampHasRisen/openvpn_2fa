@@ -272,26 +272,26 @@ verb 3" >>/etc/openvpn/server.conf
     systemctl daemon-reload
     systemctl enable openvpn-server@server.service && systemctl restart openvpn-server@server.service
 
-	# Add iptables rules in two scripts
-	mkdir -p /etc/iptables
-	# Script to add rules
-	echo "#!/bin/sh
-    iptables -t nat -I POSTROUTING 1 -s ${SUBNET}/24 -o $NIC -j MASQUERADE
-    iptables -I INPUT 1 -i tun0 -j ACCEPT
-    iptables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
-    iptables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
-    iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport $PORT -j ACCEPT" >/etc/iptables/add-openvpn-rules.sh
+	##Add iptables rules in two scripts
+	# mkdir -p /etc/iptables
+	##Script to add rules
+	# echo "#!/bin/sh
+    # iptables -t nat -I POSTROUTING 1 -s ${SUBNET}/24 -o $NIC -j MASQUERADE
+    # iptables -I INPUT 1 -i tun0 -j ACCEPT
+    # iptables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
+    # iptables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
+    # iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport $PORT -j ACCEPT" >/etc/iptables/add-openvpn-rules.sh
 	
-	# Script to remove rules
-	echo "#!/bin/sh
-    iptables -t nat -D POSTROUTING -s ${SUBNET}/24 -o $NIC -j MASQUERADE
-    iptables -D INPUT -i tun0 -j ACCEPT
-    iptables -D FORWARD -i $NIC -o tun0 -j ACCEPT
-    iptables -D FORWARD -i tun0 -o $NIC -j ACCEPT
-    iptables -D INPUT -i $NIC -p $PROTOCOL --dport $PORT -j ACCEPT" >/etc/iptables/rm-openvpn-rules.sh
+	##Script to remove rules
+	# echo "#!/bin/sh
+    # iptables -t nat -D POSTROUTING -s ${SUBNET}/24 -o $NIC -j MASQUERADE
+    # iptables -D INPUT -i tun0 -j ACCEPT
+    # iptables -D FORWARD -i $NIC -o tun0 -j ACCEPT
+    # iptables -D FORWARD -i tun0 -o $NIC -j ACCEPT
+    # iptables -D INPUT -i $NIC -p $PROTOCOL --dport $PORT -j ACCEPT" >/etc/iptables/rm-openvpn-rules.sh
 	
-	chmod +x /etc/iptables/add-openvpn-rules.sh
-	chmod +x /etc/iptables/rm-openvpn-rules.sh
+	# chmod +x /etc/iptables/add-openvpn-rules.sh
+	# chmod +x /etc/iptables/rm-openvpn-rules.sh
 	# Handle the rules via a systemd script
 	echo "[Unit]
 Description=iptables rules for OpenVPN
