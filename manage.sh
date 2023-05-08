@@ -2,6 +2,7 @@
 
 ACTION=$1
 CLIENT=$2
+EMAIL=$3
 HOST=$(hostname)
 CLIENTDIR="/opt/openvpn/clients"
 
@@ -22,6 +23,7 @@ function emailProfile() {
 
     CLIENT=$1
     PASSWORD=$2
+	EMAIL=$3
 
     ### Email the profile to the user
     hostlist=$(cat /etc/hosts | grep -v "#" | grep -v "localhost" | grep -v "127.0.0.1" | grep -v -e "^$")
@@ -42,7 +44,7 @@ If DNS is not working, you can use the /etc/hosts list below to connect to hosts
 ${hostlist}
 
     """
-    echo "${content}" | mailx -s "Your OpenVPN profile" -a "${CLIENTDIR}/${CLIENT}/${CLIENT}.ovpn" -a "/opt/openvpn/google-auth/${CLIENT}.png" -r "Devops<devops@company.com>" "${CLIENT}@company.com" || { echo "${R}${B}error mailing profile to client: ${CLIENT}${C}"; exit 1; }
+    echo "${content}" | mailx -s "Your OpenVPN profile" -a "${CLIENTDIR}/${CLIENT}/${CLIENT}.ovpn" -a "/opt/openvpn/google-auth/${CLIENT}.png" -r "Devops<devops@company.com>" "${EMAIL}" || { echo "${R}${B}error mailing profile to client: ${CLIENT}${C}"; exit 1; }
 }
 
 
@@ -103,7 +105,7 @@ function newClient() {
 
 if [ ! "${ACTION}" == "create" ] && [ ! "${ACTION}" == "revoke" ] && [ ! "${ACTION}" == "status" ] && [ ! "${ACTION}" == "send" ]
 then
-    echo -e "${W}usage:\n./manage.sh create/revoke <username>\n./manage.sh status\n./manage.sh send <username>${C}"
+    echo -e "${W}usage:\n./manage.sh create <username> <email>\n/manage.sh revoke <username>\n./manage.sh status\n./manage.sh send <username>${C}"
     exit 1
 fi
 
@@ -112,6 +114,7 @@ cd /opt/openvpn || exit 1
 if [ "${ACTION}" == "create" ]
 then
     [ -z "${CLIENT}" ] && { echo -e "${R}Provide a username to create${C}"; exit 1; }
+	[ -z "${EMAIL}" ] && { echo -e "${R}Provide a email to send details${C}"; exit 1; }
 
     newClient "${CLIENT}" || { echo -e "${R}${B}Error generating user VPN profile${C}"; exit 1; }
 
@@ -121,7 +124,7 @@ then
     qrencode -t PNG -o "/opt/openvpn/google-auth/${CLIENT}.png" "otpauth://totp/${CLIENT}@${HOST}?secret=${secret}&issuer=openvpn" || { echo -e "${R}${B}Error generating PNG${C}"; exit 1; }
 
     PW=$(cat "${CLIENTDIR}/${CLIENT}/pass") || { echo -e "${R}${B}Error generating new user${C}"; exit 1; }
-    emailProfile "${CLIENT}" "${PW}" || { echo -e "${R}${B}Error sending profile to new user ${CLIENT} ${C}"; exit 1; }
+    emailProfile "${CLIENT}" "${PW}" "${EMAIL}" || { echo -e "${R}${B}Error sending profile to new user ${CLIENT} ${C}"; exit 1; }
 fi
 
 

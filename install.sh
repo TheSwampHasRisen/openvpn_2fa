@@ -264,14 +264,13 @@ verb 3" >>/etc/openvpn/server.conf
 	# Finally, restart and enable OpenVPN
 	
     # Don't modify package-provided service
-    cp /lib/systemd/system/openvpn\@.service /etc/systemd/system/openvpn\@.service
+    cp /usr/lib/systemd/system/openvpn-server@.service /etc/systemd/system/
     # Workaround to fix OpenVPN service on OpenVZ
-    sed -i 's|LimitNPROC|#LimitNPROC|' /etc/systemd/system/openvpn\@.service
+    sed -i 's|LimitNPROC=10|LimitNPROC=infinity|g' /etc/systemd/system/openvpn-server@.service
     # Another workaround to keep using /etc/openvpn/
-    sed -i 's|/etc/openvpn/server|/etc/openvpn|' /etc/systemd/system/openvpn\@.service
+    sed -i 's|/etc/openvpn/server|/etc/openvpn|g' /etc/systemd/system/openvpn-server@.service
     systemctl daemon-reload
-    systemctl enable openvpn@server
-    systemctl restart openvpn@server
+    systemctl enable openvpn-server@server.service && systemctl restart openvpn-server@server.service
 
 	# Add iptables rules in two scripts
 	mkdir -p /etc/iptables
